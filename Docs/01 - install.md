@@ -1,35 +1,44 @@
 # Installation
 
-Run the installer only against a clean home for the chosen target(s). It
-copies the bundle payload into `$HOME\.codex` (Codex), `$HOME\.claude`
-(Claude Code), or both, and refuses to run if any bundle-managed path
-already exists at the destination. It does not edit `config.toml` (Codex)
-or `settings.json` (Claude Code), migrate an existing installation, or
-delete files.
+Jarvis runs on the real gentle-ai SDD stack, installed with the `gentle-ai`
+CLI — there is no bundle-specific installer script anymore.
 
-Choose the target with `-Target Codex|Claude|Both`. Omit `-Target` and the
-installer prompts interactively with a `1) Codex`, `2) Claude`, `3) Both`
-menu.
+## Prerequisites
 
-```powershell
-powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\install.ps1 -Target Codex -WhatIf
-powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\install.ps1 -Target Codex
-powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\install.ps1 -Target Claude
-powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\install.ps1 -Target Both
+Before cloning this repo on a new machine, make sure it already has:
+
+- `gentle-ai` on `PATH` — `gentle-ai --version` should print something.
+- The `engram` binary installed and registered (`gentle-ai install`
+  handles this if it isn't yet — watch its output for an Engram warning).
+- Claude Code and/or Codex installed.
+
+These are machine-level, not repo-level: cloning this repo alone does not
+give a fresh machine any of the three. See [`02 - internal-scope.md`](02%20-%20internal-scope.md)
+for why phase agents depend on home-directory files instead of only
+what's committed here.
+
+```bash
+gentle-ai install --scope workspace --agents claude-code,codex --components sdd,skills
 ```
 
-`-WhatIf` reports what would be copied without writing anything.
+`--scope workspace` places the agents, skills, commands, hooks, and MCP
+wiring inside this repository's own `.claude/` and `.codex/` folders
+instead of your home directory. Omit `--dry-run` once you're happy with
+the plan it prints.
 
-Before copying, the installer verifies the source bundle is complete (the
-required top-level files for the chosen target) and that none of the
-managed paths — `AGENTS.md`/`CLAUDE.md`, `rules.md`, `jarvis-runtime.json`,
-`engram-instructions.md`, `incident-reporting.md`, `bundled-skills.md`,
-`agents/`, `skills/` — already exist at the destination home. If any do, it
-throws instead of overwriting, migrating, or pruning; move or back up the
-existing home first, or install to a fresh one.
+To bring an existing installation up to date after the `gentle-ai` CLI
+itself is upgraded:
 
-After installation, restart Codex and/or Claude Code so the runtime picks
-up the new home contents. Wiring the runtime to actually load
-`AGENTS.md`/`CLAUDE.md` on session start, and any hooks or MCP server
-configuration (e.g. Engram), is configured separately — the installer only
-places the files.
+```bash
+gentle-ai sync --agents claude-code,codex
+```
+
+Note: `gentle-ai sync` only ever touches your home-directory install
+(`$HOME/.claude`, `$HOME/.codex`), never a workspace-scoped one. To update
+a workspace install, re-run `gentle-ai install --scope workspace ...` —
+it will not overwrite files that already exist, so delete the stale ones
+first if you need a clean refresh (this is exactly how the Codex
+`agents/` mismatch in this repo's history got fixed).
+
+Restart Claude Code / Codex after installing or syncing so hooks and MCP
+config get picked up.

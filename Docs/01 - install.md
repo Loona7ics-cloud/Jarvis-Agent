@@ -3,6 +3,20 @@
 Jarvis runs on the real gentle-ai SDD stack, installed with the `gentle-ai`
 CLI — there is no bundle-specific installer script anymore.
 
+## Prerequisites
+
+Before cloning this repo on a new machine, make sure it already has:
+
+- `gentle-ai` on `PATH` — `gentle-ai --version` should print something.
+- The `engram` binary installed and registered (`gentle-ai install`
+  handles this if it isn't yet — watch its output for an Engram warning).
+- Claude Code and/or Codex installed.
+
+These are machine-level, not repo-level: cloning this repo alone does not
+give a fresh machine any of the three. See [`02 - internal-scope.md`](02%20-%20internal-scope.md)
+for why phase agents depend on home-directory files instead of only
+what's committed here.
+
 ```bash
 gentle-ai install --scope workspace --agents claude-code,codex --components sdd,skills
 ```
